@@ -1,0 +1,36 @@
+mandiant.tsv.gz: what Mandiant's reader (macos-UnifiedLogs'
+unifiedlog_iterator v0.7.0, x86_64 Linux release binary, SHA-256
+e43dff279d16c96a00b6de0c16a2385bb287f3d6ae257852d6f216f0c907bf8c) gives for
+the fixtures in tests/fixtures/mandiant/, one line per entry: file, time
+(nanoseconds, rounded from Mandiant's floating point), thread, pid, euid,
+event type, log type, activity and parent activity, subsystem, category,
+process and its UUID, library and its UUID, format string, message. Tabs,
+newlines, carriage returns and backslashes in values are escaped (\t \n \r
+\\). make_fixtures.py made the fixtures and this file, on Linux, from
+Mandiant's v1.0.0 test_data.zip:
+
+  python3 -I make_fixtures.py test_data unifiedlog_iterator /tmp/work REPO
+
+It cuts each fixture down (see tests/fixtures/mandiant/NOTICE) and checks
+that Mandiant's reader gives the same output for the cut-down archive as
+for the full one (protocol buffer statedumps aside: Mandiant writes their
+fields in hash map order, which changes from run to run, so a new run
+reorders those few messages' fields; the fixtures come out the same).
+
+apple.tsv.gz: what Apple's `log show --style ndjson --info --debug
+--signpost` (macOS 26) gives for the same fixtures, one line per entry:
+fixture, thread, continuous time, event type, format string, message,
+signpost name. apple.py wrote it, on macOS:
+
+  python3 -I apple.py REPO /tmp/work
+
+lzbitmap.py rewrote big_sur/Special/0000000000000001.tracev3's chunksets with
+LZBITMAP, with macOS's libcompression, into
+tests/fixtures/mandiant/big_sur/lzbitmap/0000000000000001.tracev3 (then
+gzip -9n):
+
+  python3 -I lzbitmap.py in.tracev3 out.tracev3
+
+tests/oracle.rs compares this crate's reading of the fixtures with both
+files, and, when asked, a whole archive with Mandiant's JSON lines and
+Apple's ndjson (see its documentation).
